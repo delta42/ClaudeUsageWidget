@@ -8,7 +8,10 @@ namespace ClaudeUsageWidget;
 public static class StartupManager
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string ValueName = "ClaudeUsageWidget";
+
+    // One entry per profile, so several widgets can start with Windows independently.
+    private static string ValueName =>
+        AppProfile.IsDefault ? "ClaudeUsageWidget" : $"ClaudeUsageWidget - {AppProfile.Name}";
 
     public static void SetEnabled(bool enabled)
     {
@@ -19,7 +22,10 @@ public static class StartupManager
         {
             var exePath = Environment.ProcessPath;
             if (string.IsNullOrEmpty(exePath)) return;
-            key.SetValue(ValueName, $"\"{exePath}\"");
+            var command = AppProfile.IsDefault
+                ? $"\"{exePath}\""
+                : $"\"{exePath}\" --profile \"{AppProfile.Name}\"";
+            key.SetValue(ValueName, command);
         }
         else
         {

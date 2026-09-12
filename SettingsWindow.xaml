@@ -7,11 +7,16 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <StackPanel Margin="16">
+        <TextBlock x:Name="ProfileLabel" Margin="0,0,0,12" Foreground="#666666"/>
+
         <TextBlock Text="Page URL" Margin="0,0,0,4"/>
         <TextBox x:Name="UrlBox" Margin="0,0,0,12"/>
 
         <TextBlock Text="Refresh rate (seconds)" Margin="0,0,0,4"/>
         <TextBox x:Name="RefreshBox" Margin="0,0,0,16"/>
+
+        <TextBlock Text="Accent colour" Margin="0,0,0,4"/>
+        <ComboBox x:Name="AccentBox" Margin="0,0,0,16" MaxDropDownHeight="260"/>
 
         <CheckBox x:Name="LaunchAtStartupBox" Content="Launch at Windows startup" Margin="0,0,0,16"/>
 

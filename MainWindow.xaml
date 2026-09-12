@@ -9,7 +9,8 @@
         Topmost="True"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
-        SizeToContent="WidthAndHeight"
+        SizeToContent="Height"
+        Width="150"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.ContextMenu>
@@ -22,25 +23,58 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <Border CornerRadius="8" Background="#CC1E1E1E" Padding="12,8" ToolTip="Claude session usage — right-click for options">
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Image x:Name="IconImage" Source="Assets/claude-code-icon.png" Width="32" Height="32" Margin="0,0,8,0"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock x:Name="ValueText"
-                           Text="--%"
-                           Foreground="White"
-                           FontSize="28"
-                           FontFamily="Segoe UI Semibold"
-                           VerticalAlignment="Center"/>
+    <!-- The outer border is the accent stripe: it paints the profile's colour and
+         the inner border covers all but a few pixels of its left edge. Sizing the
+         stripe with the outer Padding avoids having to clip a child to the
+         rounded corners. -->
+    <Border x:Name="AccentBorder" CornerRadius="8" Background="Transparent" Padding="0"
+            ToolTip="Claude session usage — right-click for options">
+        <Border x:Name="BodyBorder" CornerRadius="8" Background="#CC1E1E1E" Padding="10,7">
+            <Grid x:Name="ContentGrid">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Image x:Name="IconImage" Source="Assets/claude-code-icon.png" Width="37" Height="37" Margin="0,0,8,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock x:Name="ValueText"
+                               Text="--%"
+                               Foreground="White"
+                               FontSize="28"
+                               FontFamily="Segoe UI Semibold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock x:Name="ResetText"
+                           Text=""
+                           Foreground="#BBBBBB"
+                           FontSize="11"
+                           FontFamily="Segoe UI"
+                           HorizontalAlignment="Center"
+                           Margin="0,4,0,0"/>
+                <TextBlock x:Name="WeeklyText"
+                           Text=""
+                           Visibility="Collapsed"
+                           Foreground="#BBBBBB"
+                           FontSize="11"
+                           FontFamily="Segoe UI"
+                           HorizontalAlignment="Center"
+                           Margin="0,2,0,0"/>
             </StackPanel>
-            <TextBlock x:Name="ResetText"
-                       Text=""
-                       Foreground="#BBBBBB"
-                       FontSize="11"
-                       FontFamily="Segoe UI"
-                       HorizontalAlignment="Center"
-                       Margin="0,4,0,0"/>
-        </StackPanel>
+
+            <!-- "You can't use this account right now" marker. It lives in a Canvas so
+                 it contributes no desired size of its own: the slash is measured from
+                 the grid it is drawn over, which would otherwise be circular. -->
+            <Canvas IsHitTestVisible="False">
+                <Line x:Name="BlockedSlash"
+                      Visibility="Collapsed"
+                      X1="0" Y1="0"
+                      X2="{Binding ActualWidth, ElementName=ContentGrid}"
+                      Y2="{Binding ActualHeight, ElementName=ContentGrid}"
+                      Stroke="#E8655F"
+                      StrokeThickness="4"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Opacity="0.9"/>
+            </Canvas>
+            </Grid>
+        </Border>
     </Border>
 </Window>

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,14 +18,16 @@ public partial class BrowserWindow : Window
     public BrowserWindow()
     {
         InitializeComponent();
+        if (!AppProfile.IsDefault) Title = $"Claude Usage ({AppProfile.Name}) - Sign in";
         _ = InitAsync();
     }
 
     private async Task InitAsync()
     {
-        var dataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ClaudeUsageWidget", "WebView2Data");
+        // Per-profile folder: WebView2 locks a user-data folder to a single
+        // process, and it is what holds the claude.ai cookies, so two widgets with
+        // two logins must not share it.
+        var dataDir = AppProfile.WebView2DataDir;
         Directory.CreateDirectory(dataDir);
 
         var env = await CoreWebView2Environment.CreateAsync(userDataFolder: dataDir);
@@ -81,62 +84,82 @@ public partial class BrowserWindow : Window
         await Task.Delay(2500);
     }
 
-    // Looks for a text node that starts with "NN%" (claude.ai renders usage as
-    // e.g. "44% used" in a single text node, not an isolated "44%").
+    // claude.ai's usage page lists its limits in order — the current session first, then
+    // the weekly limit — each rendering a "Resets ..." line followed by a "NN% used"
+    // figure. Pairing them up in the page rather than returning two parallel lists
+    // matters: a section that omits its reset line would otherwise shift every later
+    // reset onto the wrong percentage. The exact wording differs between account types,
+    // so nothing here assumes a particular plan's labels.
     private const string ExtractScript = @"
 (function() {
-    function walk(node, results) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            var t = node.textContent.trim();
-            var m = /^(\d{1,3})\s?%/.exec(t);
-            if (m) {
-                results.push(m[1] + ""%"");
-            }
-        } else {
-            for (var i = 0; i < node.childNodes.length; i++) {
-                walk(node.childNodes[i], results);
-            }
-        }
-        return results;
-    }
-    return JSON.stringify(walk(document.body, []));
-})();";
-
-    public async Task<string[]> ExtractPercentagesAsync()
-    {
-        await WaitUntilReadyAsync();
-        var json = await WithTimeout(WebView.CoreWebView2.ExecuteScriptAsync(ExtractScript), "percentage extraction");
-        // ExecuteScriptAsync returns a JSON-encoded string; the script itself already
-        // returns a JSON string, so unwrap once.
-        var inner = JsonSerializer.Deserialize<string>(json) ?? "[]";
-        return JsonSerializer.Deserialize<string[]>(inner) ?? Array.Empty<string>();
-    }
-
-    // Finds the first "Resets in X hr Y min" text node (the current-session countdown)
-    // and returns the part after "Resets in ", e.g. "2 hr 31 min".
-    private const string ResetScript = @"
-(function() {
+    var items = [];
     function walk(node) {
         if (node.nodeType === Node.TEXT_NODE) {
             var t = node.textContent.trim();
-            var m = /^Resets in\s+(.+)$/i.exec(t);
-            if (m) return m[1];
+            var m = /^(\d{1,3})\s?%/.exec(t);
+            if (m) { items.push({ t: 'p', v: m[1] }); return; }
+            if (/^Resets\b\s+.+$/i.test(t)) items.push({ t: 'r', v: t });
         } else {
-            for (var i = 0; i < node.childNodes.length; i++) {
-                var r = walk(node.childNodes[i]);
-                if (r) return r;
-            }
+            for (var i = 0; i < node.childNodes.length; i++) walk(node.childNodes[i]);
         }
-        return null;
     }
-    return walk(document.body) || """";
+    walk(document.body);
+
+    var sections = [];
+    var pending = null;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].t === 'r') {
+            pending = items[i].v;
+        } else {
+            sections.push({ percent: items[i].v, reset: pending || '' });
+            pending = null;
+        }
+    }
+    return JSON.stringify(sections);
 })();";
 
-    public async Task<string> ExtractResetInTextAsync()
+    public record Section(int Percent, string Reset);
+
+    public record UsageSnapshot(Section[] Sections)
+    {
+        public static readonly UsageSnapshot Empty = new([]);
+
+        public bool IsEmpty => Sections.Length == 0;
+
+        // Index 0 is the current session, index 1 the weekly limit. A page showing only
+        // one of them simply yields no value for the other.
+        public int? Session => Sections.Length > 0 ? Sections[0].Percent : null;
+        public int? Weekly => Sections.Length > 1 ? Sections[1].Percent : null;
+        public string SessionReset => Sections.Length > 0 ? Sections[0].Reset : "";
+        public string WeeklyReset => Sections.Length > 1 ? Sections[1].Reset : "";
+    }
+
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public async Task<UsageSnapshot> ExtractUsageAsync()
     {
         await WaitUntilReadyAsync();
-        var json = await WithTimeout(WebView.CoreWebView2.ExecuteScriptAsync(ResetScript), "reset-time extraction");
-        return JsonSerializer.Deserialize<string>(json) ?? "";
+        var json = await WithTimeout(WebView.CoreWebView2.ExecuteScriptAsync(ExtractScript), "usage extraction");
+        // ExecuteScriptAsync returns a JSON-encoded string; the script itself already
+        // returns a JSON string, so unwrap once.
+        var inner = JsonSerializer.Deserialize<string>(json) ?? "";
+        if (string.IsNullOrEmpty(inner)) return UsageSnapshot.Empty;
+
+        var raw = JsonSerializer.Deserialize<RawSection[]>(inner, JsonOptions);
+        if (raw == null) return UsageSnapshot.Empty;
+
+        var sections = new List<Section>();
+        foreach (var r in raw)
+        {
+            if (int.TryParse(r.Percent, out var value)) sections.Add(new Section(value, r.Reset ?? ""));
+        }
+        return new UsageSnapshot([.. sections]);
+    }
+
+    private sealed class RawSection
+    {
+        public string? Percent { get; set; }
+        public string? Reset { get; set; }
     }
 
     public void ShowForLogin(string url)
