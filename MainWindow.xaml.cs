@@ -190,7 +190,8 @@ public partial class MainWindow : Window
     // whether it is the session or the weekly limit:
     //   "Resets in 50 min"          — a countdown
     //   "Resets at 8:50 PM"         — a time later today
-    //   "Resets Saturday 8:00 AM"   — a named weekday
+    //   "Resets Saturday 8:00 AM"   — a named weekday, spelled out or abbreviated
+    //   "Resets Sun 2:00 AM"          (the same page can use both forms at once)
     // All three are resolved to an actual moment here, so the widget can render them
     // in one consistent style rather than echoing whichever wording the page used.
     private static DateTime? ParseResetMoment(string resetText)
@@ -218,12 +219,12 @@ public partial class MainWindow : Window
             return moment > now ? moment : moment.AddDays(1);
         }
 
-        // "Resets Saturday 8:00 AM" — the next occurrence of that weekday.
+        // "Resets Saturday 8:00 AM" / "Resets Sun 2:00 AM" — the next occurrence of that weekday.
         var weekday = Regex.Match(
             resetText,
-            @"^Resets\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*,?\s*(.*)$",
+            @"^Resets\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?\s*,?\s*(?:at\s+)?(.*)$",
             RegexOptions.IgnoreCase);
-        if (weekday.Success && Enum.TryParse<DayOfWeek>(weekday.Groups[1].Value, true, out var day))
+        if (weekday.Success && TryParseWeekday(weekday.Groups[1].Value, out var day))
         {
             TryParseTimeOfDay(weekday.Groups[2].Value, out var time);
             var ahead = ((int)day - (int)now.DayOfWeek + 7) % 7;
@@ -240,13 +241,30 @@ public partial class MainWindow : Window
         return m.Success ? int.Parse(m.Groups[1].Value) : 0;
     }
 
+    // Keyed on the first three letters, which is all the regex above captures.
+    private static bool TryParseWeekday(string prefix, out DayOfWeek day)
+    {
+        foreach (var candidate in Enum.GetValues<DayOfWeek>())
+        {
+            if (candidate.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                day = candidate;
+                return true;
+            }
+        }
+        day = default;
+        return false;
+    }
+
     private static bool TryParseTimeOfDay(string text, out TimeSpan time)
     {
         time = default;
         text = text.Trim();
         if (text.Length == 0) return false;
 
-        foreach (var culture in new[] { CultureInfo.CurrentCulture, CultureInfo.InvariantCulture })
+        // The page's times are English ("2:00 AM"), so try the invariant culture first:
+        // a 24-hour OS locale may otherwise read the time while dropping the AM/PM.
+        foreach (var culture in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture })
         {
             if (DateTime.TryParse(text, culture, DateTimeStyles.NoCurrentDateDefault, out var parsed))
             {
