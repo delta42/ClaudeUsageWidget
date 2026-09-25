@@ -133,8 +133,10 @@ public partial class MainWindow : Window
     }
 
     // Either limit hitting 100% means the account can't be used until it resets, which
-    // is the one state worth interrupting a glance for: the widget goes red and a slash
-    // is drawn across it.
+    // is the one state worth interrupting a glance for: the number goes red and a slash
+    // is drawn across it. The accent stripe keeps the profile's colour so a blocked
+    // widget can still be told apart from the others; only a profile with no accent
+    // borrows the stripe to show red.
     private void ApplyBlockedState(BrowserWindow.UsageSnapshot usage)
     {
         var blocked = usage.Session >= 100 || usage.Weekly >= 100;
@@ -144,8 +146,12 @@ public partial class MainWindow : Window
         {
             var exhausted = new SolidColorBrush(ExhaustedColour);
             ValueText.Foreground = exhausted;
-            AccentBorder.Background = exhausted;
-            AccentBorder.Padding = new Thickness(AccentStripeWidth, 0, 0, 0);
+            ApplyAccent();
+            if (AccentPalette.Resolve(_settings.AccentColor, AppProfile.Name) == null)
+            {
+                AccentBorder.Background = exhausted;
+                AccentBorder.Padding = new Thickness(AccentStripeWidth, 0, 0, 0);
+            }
             AccentBorder.ToolTip = usage.Weekly >= 100
                 ? "Weekly limit reached — you can't use this account until it resets."
                 : "Session limit reached — you can't use this account until it resets.";
