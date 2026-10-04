@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private readonly Settings _settings;
     private readonly BrowserWindow _browser;
     private readonly DispatcherTimer _timer;
+    private readonly WidgetSnapping _snapping;
     private bool _refreshing;
 
     public MainWindow()
@@ -23,6 +24,7 @@ public partial class MainWindow : Window
         _settings = Settings.Load();
         Left = _settings.WindowLeft;
         Top = _settings.WindowTop;
+        _snapping = new WidgetSnapping(this);
 
         if (!AppProfile.IsDefault)
         {

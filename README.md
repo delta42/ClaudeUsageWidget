@@ -19,6 +19,8 @@ Claude.ai session usage and reset time at a glance.
 - Named profiles, so you can run several widgets side by side on different Claude accounts,
   each with its own accent colour
 - Remembers its window position between runs
+- Widgets snap to each other with an 8px gap while you drag them, and widgets snapped
+  together move as a group — hold Ctrl while dragging (at any point) to pull one out on its own
 
 ## How it works
 
