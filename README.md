@@ -97,7 +97,7 @@ Notes:
 
 Right-click → **Settings...** lets you change:
 
-- **Page URL** — which claude.ai page to read from (defaults to `https://claude.ai/new`)
+- **Page URL** — which claude.ai page to read from (defaults to `https://claude.ai/settings/usage`)
 - **Refresh rate (seconds)** — how often to refresh (default: 60)
 - **Accent colour** — the widget's colour coding (default: automatic, derived from the profile name)
 - **Launch at Windows startup** — adds/removes the app from your per-user startup entries (default: off)

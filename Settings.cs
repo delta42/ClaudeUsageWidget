@@ -6,7 +6,7 @@ namespace ClaudeUsageWidget;
 
 public class Settings
 {
-    public string Url { get; set; } = "https://claude.ai/new";
+    public string Url { get; set; } = "https://claude.ai/settings/usage";
     public int RefreshSeconds { get; set; } = 60;
     public bool LaunchAtStartup { get; set; } = false;
 
@@ -37,7 +37,7 @@ public class Settings
 
     // Settings for a profile being seen for the first time. A new profile inherits
     // which page to read and how often from the default profile, since those are
-    // account-independent and the factory default URL is rarely the one you want;
+    // account-independent and may have been customised there;
     // the login, position, colour and startup entry stay per-profile.
     private static Settings NewForFreshProfile()
     {
