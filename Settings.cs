@@ -12,6 +12,13 @@ public class Settings
 
     // Hex accent colour ("#4C9BE8"); empty means "derive it from the profile name".
     public string AccentColor { get; set; } = "";
+
+    // Whole-widget opacity in percent, clamped to MinOpacityPercent..100 when applied
+    // so a stray value in the file can't make the widget vanish.
+    public int OpacityPercent { get; set; } = 80;
+    public const int MinOpacityPercent = 20;
+    public double Opacity => Math.Clamp(OpacityPercent, MinOpacityPercent, 100) / 100.0;
+
     public double WindowLeft { get; set; } = 100;
     public double WindowTop { get; set; } = 100;
 
@@ -36,8 +43,8 @@ public class Settings
     }
 
     // Settings for a profile being seen for the first time. A new profile inherits
-    // which page to read and how often from the default profile, since those are
-    // account-independent and may have been customised there;
+    // which page to read, how often and how opaque to draw from the default profile,
+    // since those are account-independent and may have been customised there;
     // the login, position, colour and startup entry stay per-profile.
     private static Settings NewForFreshProfile()
     {
@@ -49,6 +56,7 @@ public class Settings
         {
             settings.Url = inherited.Url;
             settings.RefreshSeconds = inherited.RefreshSeconds;
+            settings.OpacityPercent = inherited.OpacityPercent;
         }
 
         // Spread named profiles down the screen by name rather than stacking them

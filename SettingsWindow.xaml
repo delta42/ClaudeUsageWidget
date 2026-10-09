@@ -18,6 +18,10 @@
         <TextBlock Text="Accent colour" Margin="0,0,0,4"/>
         <ComboBox x:Name="AccentBox" Margin="0,0,0,16" MaxDropDownHeight="260"/>
 
+        <TextBlock x:Name="OpacityLabel" Margin="0,0,0,4"/>
+        <Slider x:Name="OpacitySlider" Margin="0,0,0,16" Maximum="100" TickFrequency="5"
+                IsSnapToTickEnabled="True" ValueChanged="OpacitySlider_ValueChanged"/>
+
         <CheckBox x:Name="LaunchAtStartupBox" Content="Launch at Windows startup" Margin="0,0,0,16"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

@@ -19,7 +19,15 @@ public partial class SettingsWindow : Window
         UrlBox.Text = settings.Url;
         RefreshBox.Text = settings.RefreshSeconds.ToString();
         PopulateAccents(settings.AccentColor);
+        OpacitySlider.Minimum = Settings.MinOpacityPercent;
+        OpacitySlider.Value = settings.Opacity * 100;
         LaunchAtStartupBox.IsChecked = settings.LaunchAtStartup;
+
+        // Undo the live opacity preview unless saved (Cancel, Esc or the close box).
+        Closed += (_, _) =>
+        {
+            if (DialogResult != true && Owner != null) Owner.Opacity = _settings.Opacity;
+        };
     }
 
     // "Automatic" (Tag = "") derives the colour from the profile name; the rest are
@@ -50,6 +58,13 @@ public partial class SettingsWindow : Window
             .FindIndex(i => string.Equals((string)i.Tag, configured, StringComparison.OrdinalIgnoreCase)));
     }
 
+    // Previews on the widget itself while dragging.
+    private void OpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        OpacityLabel.Text = $"Opacity ({e.NewValue:0}%)";
+        if (Owner != null) Owner.Opacity = e.NewValue / 100;
+    }
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         _settings.Url = UrlBox.Text.Trim();
@@ -59,6 +74,8 @@ public partial class SettingsWindow : Window
         }
 
         _settings.AccentColor = (string)((ComboBoxItem)AccentBox.SelectedItem).Tag;
+
+        _settings.OpacityPercent = (int)OpacitySlider.Value;
 
         _settings.LaunchAtStartup = LaunchAtStartupBox.IsChecked == true;
         StartupManager.SetEnabled(_settings.LaunchAtStartup);

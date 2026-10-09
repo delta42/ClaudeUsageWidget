@@ -36,6 +36,7 @@ public partial class MainWindow : Window
         }
         AccentBorder.ToolTip = DefaultToolTip;
         ApplyAccent();
+        Opacity = _settings.Opacity;
 
         _browser = new BrowserWindow();
         _browser.LoginDone += () => _ = RefreshAsync();
@@ -333,6 +334,7 @@ public partial class MainWindow : Window
             _settings.Save();
             ApplyRefreshInterval();
             ApplyAccent();
+            Opacity = _settings.Opacity;
             _ = RefreshAsync();
         }
     }
