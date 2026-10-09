@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly BrowserWindow _browser;
     private readonly DispatcherTimer _timer;
     private readonly WidgetSnapping _snapping;
+    private readonly TopmostGuard _topmostGuard;
     private bool _refreshing;
 
     public MainWindow()
@@ -25,6 +26,7 @@ public partial class MainWindow : Window
         Left = _settings.WindowLeft;
         Top = _settings.WindowTop;
         _snapping = new WidgetSnapping(this);
+        _topmostGuard = new TopmostGuard(this);
 
         if (!AppProfile.IsDefault)
         {
