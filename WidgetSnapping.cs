@@ -87,8 +87,8 @@ public sealed class WidgetSnapping
         }, IntPtr.Zero);
 
         // The group is every widget reachable through a chain of snapped neighbours.
+        var ctrl = CtrlDown();
         var inGroup = new bool[peers.Count];
-        if (!CtrlDown())
         {
             var frontier = new Queue<RECT>();
             frontier.Enqueue(_dragStart);
@@ -106,7 +106,12 @@ public sealed class WidgetSnapping
 
         for (var i = 0; i < peers.Count; i++)
         {
-            if (inGroup[i]) _group.Add(peers[i]);
+            if (inGroup[i])
+            {
+                // Ctrl at the start pulls the widget free, so its old neighbours are
+                // not snapped to either — otherwise they'd pull it straight back.
+                if (!ctrl) _group.Add(peers[i]);
+            }
             else _others.Add(peers[i].Rect);
         }
     }
@@ -171,11 +176,10 @@ public sealed class WidgetSnapping
     // read the physical key state instead.
     private static bool CtrlDown() => (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 
-    // The rest of the group stays wherever the drag has carried it so far, and from
-    // here on counts as ordinary widgets to snap against.
+    // The rest of the group stays wherever the drag has carried it so far. It is not
+    // a snap target for the rest of this drag, or it would pull the widget back in.
     private void LeaveGroup()
     {
-        foreach (var (_, start) in _group) _others.Add(start.Offset(_lastDx, _lastDy));
         _group.Clear();
     }
 
