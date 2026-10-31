@@ -27,6 +27,8 @@ public partial class App : Application
 
     private static string ErrorLogPath => Path.Combine(AppProfile.DataDir, "errors.log");
 
+    public static void LogException(Exception exception) => Log(exception);
+
     private static void Log(object exception)
     {
         try

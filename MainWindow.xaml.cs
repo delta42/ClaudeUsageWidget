@@ -86,6 +86,7 @@ public partial class MainWindow : Window
         if (_refreshing) return;
         _refreshing = true;
         StartIconFlash();
+        var failed = false;
         try
         {
             ValueText.ToolTip = null;
@@ -112,9 +113,14 @@ public partial class MainWindow : Window
         {
             ValueText.Text = "err";
             ValueText.ToolTip = ex.Message;
+            failed = true;
         }
         finally
         {
+            // Unload the page (or rebuild the WebView2 if it has grown large, or just
+            // failed) so the widget isn't holding claude.ai in memory between refreshes.
+            try { await _browser.ReleaseAsync(forceRecycle: failed); }
+            catch (Exception ex) { App.LogException(ex); }
             _refreshing = false;
             StopIconFlash();
         }

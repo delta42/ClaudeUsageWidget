@@ -1,7 +1,6 @@
 <Window x:Class="ClaudeUsageWidget.BrowserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Claude Usage - Sign in"
         Icon="Assets/claude-code-icon.ico"
         Width="1000" Height="750"
@@ -16,6 +15,8 @@
             <TextBlock Text="Log in to claude.ai, then click Done. This window will hide itself." Foreground="White" Margin="10,8" VerticalAlignment="Center"/>
             <Button x:Name="DoneButton" Content="Done" Click="Done_Click" Margin="10,4" Padding="10,2"/>
         </StackPanel>
-        <wv2:WebView2 x:Name="WebView" Grid.Row="1"/>
+        <!-- The WebView2 is created in code so it can be thrown away and rebuilt
+             when its renderer has grown too large. -->
+        <Border x:Name="WebViewHost" Grid.Row="1"/>
     </Grid>
 </Window>
