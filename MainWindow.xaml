@@ -14,10 +14,18 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.ContextMenu>
-        <ContextMenu>
+        <ContextMenu Opened="Menu_Opened">
             <MenuItem Header="Log in / show browser" Click="LogIn_Click"/>
             <MenuItem Header="Refresh now" Click="RefreshNow_Click"/>
             <MenuItem Header="Settings..." Click="Settings_Click"/>
+            <!-- Same quick choices as the RAM and CPU widgets; the Settings slider
+                 still allows any value in between. -->
+            <MenuItem x:Name="OpacityMenu" Header="Opacity">
+                <MenuItem Header="100%" Tag="100" Click="Opacity_Click"/>
+                <MenuItem Header="80%" Tag="80" Click="Opacity_Click"/>
+                <MenuItem Header="60%" Tag="60" Click="Opacity_Click"/>
+                <MenuItem Header="40%" Tag="40" Click="Opacity_Click"/>
+            </MenuItem>
             <Separator/>
             <MenuItem Header="Exit" Click="Exit_Click"/>
         </ContextMenu>

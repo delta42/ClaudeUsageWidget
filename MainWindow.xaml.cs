@@ -345,6 +345,28 @@ public partial class MainWindow : Window
         }
     }
 
+    // Ticks the opacity that matches the current setting, so the menu shows what is
+    // in use. None is ticked when the Settings slider chose an in-between value.
+    private void Menu_Opened(object sender, RoutedEventArgs e)
+    {
+        foreach (var item in OpacityMenu.Items)
+        {
+            if (item is System.Windows.Controls.MenuItem option)
+                option.IsChecked = option.Tag is string tag && int.TryParse(tag, out var percent)
+                                   && percent == _settings.OpacityPercent;
+        }
+    }
+
+    private void Opacity_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.MenuItem { Tag: string tag } && int.TryParse(tag, out var percent))
+        {
+            _settings.OpacityPercent = percent;
+            Opacity = _settings.Opacity;
+            _settings.Save();
+        }
+    }
+
     private void Exit_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
