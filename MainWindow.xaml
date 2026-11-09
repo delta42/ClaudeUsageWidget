@@ -31,24 +31,52 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- The outer border is the accent stripe: it paints the profile's colour and
+    <!-- The same photoreal treatment as the RAM, CPU and clock widgets, lit from the
+         top left: a thin polished steel frame, a brushed dark panel with a glassy
+         top highlight and a bevel, a polished accent inlay, and raised text. -->
+    <Border x:Name="Frame" CornerRadius="9" Padding="1.5">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#E6E6E6" Offset="0"/>
+                <GradientStop Color="#8C8C8C" Offset="0.3"/>
+                <GradientStop Color="#3A3A3A" Offset="0.62"/>
+                <GradientStop Color="#9A9A9A" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+    <!-- The accent border is the accent stripe: it paints the profile's colour and
          the inner border covers all but a few pixels of its left edge. Sizing the
          stripe with the outer Padding avoids having to clip a child to the
          rounded corners. -->
-    <Border x:Name="AccentBorder" CornerRadius="8" Background="Transparent" Padding="0"
+    <Border x:Name="AccentBorder" CornerRadius="7.5" Background="Transparent" Padding="0"
             ToolTip="Claude session usage — right-click for options">
-        <Border x:Name="BodyBorder" CornerRadius="8" Background="#CC1E1E1E" Padding="10,7">
+        <Grid>
+        <Border x:Name="BodyBorder" CornerRadius="7.5" Padding="10,7">
+            <!-- Dark panel, a shade lighter at the top where the light falls. -->
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#CC2A2C30" Offset="0"/>
+                    <GradientStop Color="#CC1A1B1E" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid x:Name="ContentGrid">
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Image x:Name="IconImage" Source="Assets/claude-code-icon.png" Width="37" Height="37" Margin="0,0,8,0"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality">
+                        <Image.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="2.5" ShadowDepth="1.2" Direction="315" Opacity="0.8"/>
+                        </Image.Effect>
+                    </Image>
                     <TextBlock x:Name="ValueText"
                                Text="--%"
                                Foreground="White"
                                FontSize="28"
                                FontFamily="Segoe UI Semibold"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="2.5" ShadowDepth="1.2" Direction="315" Opacity="0.9"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
                 </StackPanel>
                 <TextBlock x:Name="ResetText"
                            Text=""
@@ -84,5 +112,55 @@
             </Canvas>
             </Grid>
         </Border>
+
+        <!-- Brushed metal: fine horizontal grain, and the soft vertical streak brushed
+             metal shows across its grain on the side facing the light. -->
+        <Border CornerRadius="7.5" IsHitTestVisible="False">
+            <Border.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,60,2" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <GeometryDrawing Brush="#00000000" Geometry="M0,0 H60 V2 H0 Z"/>
+                            <GeometryDrawing Brush="#0CFFFFFF" Geometry="M0,0.2 H60 V0.7 H0 Z"/>
+                            <GeometryDrawing Brush="#0C000000" Geometry="M0,1.2 H60 V1.6 H0 Z"/>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Border.Background>
+        </Border>
+        <Border CornerRadius="7.5" IsHitTestVisible="False">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFFFF" Offset="0"/>
+                    <GradientStop Color="#14FFFFFF" Offset="0.25"/>
+                    <GradientStop Color="#00FFFFFF" Offset="0.55"/>
+                    <GradientStop Color="#06FFFFFF" Offset="0.9"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <!-- Glass: a soft gloss over the top half, a bright bevel along the top edge
+             and a dark one along the bottom. -->
+        <Border CornerRadius="7.5" IsHitTestVisible="False" BorderThickness="0,1,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#1EFFFFFF" Offset="0"/>
+                    <GradientStop Color="#06FFFFFF" Offset="0.45"/>
+                    <GradientStop Color="#00FFFFFF" Offset="0.5"/>
+                    <GradientStop Color="#14000000" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#55FFFFFF" Offset="0"/>
+                    <GradientStop Color="#55FFFFFF" Offset="0.05"/>
+                    <GradientStop Color="#00000000" Offset="0.1"/>
+                    <GradientStop Color="#00000000" Offset="0.9"/>
+                    <GradientStop Color="#80000000" Offset="0.95"/>
+                    <GradientStop Color="#80000000" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.BorderBrush>
+        </Border>
+        </Grid>
+    </Border>
     </Border>
 </Window>

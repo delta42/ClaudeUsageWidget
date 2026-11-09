@@ -70,8 +70,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        AccentBorder.Background = new SolidColorBrush(accent.Value);
+        AccentBorder.Background = Inlay(accent.Value);
         AccentBorder.Padding = new Thickness(AccentStripeWidth, 0, 0, 0);
+    }
+
+    // The accent stripe as a polished enamel inlay lit from above: brighter at the
+    // top, deeper at the bottom.
+    private static Brush Inlay(Color c)
+    {
+        static byte Lift(byte v, double t) => (byte)(v + (255 - v) * t);
+        var brush = new LinearGradientBrush(
+            Color.FromRgb(Lift(c.R, 0.3), Lift(c.G, 0.3), Lift(c.B, 0.3)),
+            Color.FromRgb((byte)(c.R * 0.6), (byte)(c.G * 0.6), (byte)(c.B * 0.6)),
+            90);
+        brush.Freeze();
+        return brush;
     }
 
     private const double AccentStripeWidth = 5;
@@ -160,7 +173,7 @@ public partial class MainWindow : Window
             ApplyAccent();
             if (AccentPalette.Resolve(_settings.AccentColor, AppProfile.Name) == null)
             {
-                AccentBorder.Background = exhausted;
+                AccentBorder.Background = Inlay(ExhaustedColour);
                 AccentBorder.Padding = new Thickness(AccentStripeWidth, 0, 0, 0);
             }
             AccentBorder.ToolTip = usage.Weekly >= 100
