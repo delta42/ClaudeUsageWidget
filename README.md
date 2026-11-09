@@ -3,7 +3,7 @@
 A small, always-on-top Windows desktop widget that shows your current
 Claude.ai session usage and reset time at a glance.
 
-<img src="Assets/screenshot.png" alt="Two widgets side by side: one profile healthy, one with its weekly limit exhausted and struck through" width="420">
+<img src="Assets/screenshot.png" alt="Three widgets stacked, one per profile, each with its own accent stripe, in the polished steel and brushed-metal finish" width="200">
 
 ## Features
 
